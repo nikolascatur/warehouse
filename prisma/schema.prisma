@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Goods {
+  id String @id @default(uuid())
+  name String @db.VarChar(100)
+  price Int @db.Int
+  sell_price Int @db.Int
+  discount Float
+  stock Int
+  barcode String @db.VarChar(100)
+  order Order[]
+  @@map("goods")
+
+}
+
+model Order {
+  id String @id @default(uuid())
+  goods_id String
+  goods Goods @relation(fields: [goods_id], references: [id])
+  count_good Int
+  transaction_id String
+  transaction Transaction @relation(fields: [transaction_id], references: [id])
+  @@map("order")
+}
+
+model Transaction {
+  id String @id @default(uuid())
+  created_ar DateTime @default(now())
+  last_update DateTime @updatedAt
+  status_payment String
+  order Order[]
+  @@map("transaction")
+}
