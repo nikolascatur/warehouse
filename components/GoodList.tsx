@@ -13,7 +13,7 @@ const fetcher = async (url: string): Promise<WebResponse<GoodsResponse[]>> => {
         const ret: WebResponse<GoodsResponse[]> = await res.json()
         return ret
 }
-    const {data, mutate} = useSWR(`${endpoint}/goods`, fetcher)
+    const {data, mutate} = useSWR(`${endpoint}/goods?id=`, fetcher)
     const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
     const handleDelete = async (id: string) => {
         await fetch(`${endpoint}/goods?id=${id}`, {

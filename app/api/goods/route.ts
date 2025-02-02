@@ -18,7 +18,9 @@ export async function GET(req:NextRequest): Promise<NextResponse> {
 
     try {
         const goodService = goodServiceInstance
-        const listGood = await goodService.getGoods()
+        const param = req.nextUrl.searchParams.get("id") as string
+        console.log(`nikoo CHEEEEKKK param ${param}`)
+        const listGood = await goodService.getGoodsId(param)
         return NextResponse.json({
             success: true,
             data: listGood
