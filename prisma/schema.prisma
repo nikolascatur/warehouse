@@ -31,6 +31,9 @@ model Order {
   goods_id String
   goods Goods @relation(fields: [goods_id], references: [id])
   count_good Int
+  price_item Int
+  price_total Int
+  discount Int
   transaction_id String
   transaction Transaction @relation(fields: [transaction_id], references: [id])
   @@map("order")

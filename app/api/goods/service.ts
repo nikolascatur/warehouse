@@ -37,7 +37,7 @@ class GoodService {
                             id: id
                         }
             })
-            const data = this.prismaClient.goods.findMany()
+            const data = await this.prismaClient.goods.findMany()
         return data.map((data: Goods, index: number) => this.toGoods(index + 1, data))
     }
 
