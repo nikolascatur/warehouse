@@ -16,8 +16,8 @@ export const DialogForm: React.FC<DialogProps> = ({isOpen, onOpenChange, onClose
 
     const [formValues, setFormValues] = useState<GoodsRequestData>({
             name: "",
-            price: 0,
-            sellPrice: 0,
+            price: BigInt(0),
+            sellPrice: BigInt(0),
             discount: 0,
             stock: 0,
             barcode: ""
@@ -36,8 +36,8 @@ export const DialogForm: React.FC<DialogProps> = ({isOpen, onOpenChange, onClose
             console.log(`InfoPOst ${JSON.stringify(formValues)}`)
             setFormValues({
                 name: "",
-                price: 0,
-                sellPrice: 0,
+                price: BigInt(0),
+                sellPrice: BigInt(0),
                 discount: 0,
                 stock: 0,
                 barcode: ""
@@ -69,11 +69,11 @@ export const DialogForm: React.FC<DialogProps> = ({isOpen, onOpenChange, onClose
                     </div>
                     <div className="mb-4">
                         <label className="block text-sm text-gray-900 font-medium">Harga</label>
-                        <input type='number' id='price' name="price" value={formValues.price} onChange={handleChange} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"/>
+                        <input type='number' id='price' name="price" value={formValues.price.toString()} onChange={handleChange} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"/>
                     </div>
                     <div className="mb-4">
                         <label className="block text-sm text-gray-900 font-medium">Harga Jual</label>
-                        <input type='number' id='sellPrice' name="sellPrice" value={formValues.sellPrice} onChange={handleChange} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"/>
+                        <input type='number' id='sellPrice' name="sellPrice" value={formValues.sellPrice.toString()} onChange={handleChange} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"/>
                     </div>
                     <div className="mb-4">
                         <label className="block text-sm text-gray-900 font-medium">Discount</label>

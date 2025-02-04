@@ -16,34 +16,75 @@ datasource db {
 model Goods {
   id String @id @default(uuid())
   name String @db.VarChar(100)
-  price Int @db.Int
-  sell_price Int @db.Int
+  price BigInt
+  sell_price BigInt
   discount Float
   stock Int
   barcode String @db.VarChar(100)
-  order Order[]
-  @@map("goods")
+}
 
+model Buyer {
+  id String @id @default(uuid())
+  buyer_name String @db.VarChar(100)
+  phone String? @db.VarChar(100)
+}
+
+model Teller {
+  id String @id @default(uuid())
+  name String @db.VarChar(100)
+  access_id String @unique
+  access Access @relation(fields: [access_id], references: [id])
+}
+
+model Access {
+  id String @id @default(uuid())
+  access_name String @db.VarChar(50)
+  teller Teller?
 }
 
 model Order {
   id String @id @default(uuid())
-  goods_id String
-  goods Goods @relation(fields: [goods_id], references: [id])
-  count_good Int
-  price_item Int
-  price_total Int
-  discount Int
-  transaction_id String
-  transaction Transaction @relation(fields: [transaction_id], references: [id])
-  @@map("order")
+  order_date BigInt 
+  last_update BigInt 
+  payment_status String @db.VarChar(50)
+  buyer_id String @db.VarChar(100)
+  buyer_name String @db.VarChar(100)
+  teller_id String @db.VarChar(100)
+  teller_name String @db.VarChar(100)
+  orderDetail OrderDetail[]
 }
 
-model Transaction {
+model OrderDetail {
   id String @id @default(uuid())
-  created_ar DateTime @default(now())
-  last_update DateTime @updatedAt
-  status_payment String
-  order Order[]
-  @@map("transaction")
+  goods_id String @db.VarChar(100)
+  goods_name String @db.VarChar(100)
+  goods_count Int 
+  goods_price BigInt
+  total_goods_price BigInt
+  discount Int
+  barcode String @db.VarChar(100)
+  order_id String @db.VarChar(100)
+  order Order @relation(fields: [order_id], references: [id])
 }
+
+// model Order {
+//   id String @id @default(uuid())
+//   goods_id String
+//   goods Goods @relation(fields: [goods_id], references: [id])
+//   count_good Int
+//   price_item Int
+//   price_total Int
+//   discount Int
+//   transaction_id String
+//   transaction Transaction @relation(fields: [transaction_id], references: [id])
+//   @@map("order")
+// }
+
+// model Transaction {
+//   id String @id @default(uuid())
+//   created_ar DateTime @default(now())
+//   last_update DateTime @updatedAt
+//   status_payment String
+//   order Order[]
+//   @@map("transaction")
+// }

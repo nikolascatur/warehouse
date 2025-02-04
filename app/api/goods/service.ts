@@ -32,9 +32,12 @@ class GoodService {
   }
 
   async getGoodsId(text: string): Promise<GoodsResponse[]> {
-    console.log(`nikoo PARQAMAMMM ${text === ""}`)
+    console.log(`nikoo PARQAMAMMM ${text === ""}`);
     if (text === "") {
-      return this.getGoods();
+      const datas = await this.prismaClient.goods.findMany();
+      return datas.map((data: Goods, index: number) =>
+        this.toGoods(index + 1, data)
+      );
     } else {
       const goods = await this.prismaClient.goods.findMany({
         where: {

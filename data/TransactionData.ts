@@ -1,51 +1,58 @@
-
 export type TransactionRequest = {
-    statusPayment: string,
-    order: OrderRequest[]
-
-}
-
-export type TransactionDb = {
-        order: {
-            goods: {
-                name: string;
-                id: string;
-            };
-            id: string;
-            count_good: number;
-            price_item: number;
-            price_total: number;
-            discount: number;
-        }[];
-        id: string;
-        created_ar: Date;
-        last_update: Date;
-        status_payment: string;
-}
-
-
+  orderDate: number;
+  lastUpdate: number;
+  statusPayment: string;
+  buyerId: string;
+  buyerName: string;
+  tellerId: string;
+  tellerName: string;
+  order: OrderRequest[];
+};
 
 export type OrderRequest = {
-    idGood: string, 
-    count: number,
-    priceItem: number,
-    discount: number
-}
+  goodId: string;
+  goodName: string;
+  goodCount: number;
+  goodPrice: number;
+  totalGoodPrice: number;
+  discount: number;
+  barcode: string;
+};
+
+export type TransactionDb = {
+  orderDetail: {
+    id: string;
+    goods_name: string;
+    goods_count: number;
+    goods_price: number;
+    total_goods_price: number;
+    discount: number;
+    barcode: string;
+  }[];
+  id: string;
+  order_date: number;
+  last_update: number;
+  payment_status: string;
+  buyer_name: string;
+  teller_name: string;
+};
 
 export type TransactionResponse = {
-    idTransaction: string,
-    createdAt: Date,
-    lastUpdate: Date,
-    statusPayment: string,
-    order: OrderResponse[]
-}
+  id: string;
+  orderDate: number;
+  lastUpdate: number;
+  paymentStatus: string;
+  buyerName: string;
+  tellerName: string;
+  order: OrderResponse[];
+};
 
 export type OrderResponse = {
-    orderId: string,
-    goodId: string,
-    goodName: string,
-    countOrder: number,
-    priceItem: number,
-    priceTotal: number,
-    discount: number
-}
+  id: string;
+  goodsName: string;
+  goodsCount: number;
+  goodsPrice: number;
+  totalGoodsPrice: number;
+  discount: number;
+  barcode: string;
+};

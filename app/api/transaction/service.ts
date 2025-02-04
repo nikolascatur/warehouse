@@ -1,85 +1,94 @@
-import { OrderRequest, TransactionDb, TransactionRequest, TransactionResponse } from "@/data/TransactionData";
-import { Order, PrismaClient, Transaction } from "@prisma/client";
-import {v4 as uuid} from 'uuid'
+import {
+  OrderRequest,
+  TransactionDb,
+  TransactionRequest,
+  TransactionResponse,
+} from "@/data/TransactionData";
+import { Order, OrderDetail, PrismaClient } from "@prisma/client";
+import { v4 as uuid } from "uuid";
 
+class TransactionService {
+  constructor(private prismaClient: PrismaClient) {}
 
-class TransactionService{
-    constructor(
-        private prismaClient: PrismaClient
-    ){}
+  private static _instance: TransactionService;
 
-    private static _instance: TransactionService
+  public static get Instance() {
+    return this._instance || (this._instance = new this(new PrismaClient()));
+  }
 
-    public static get Instance() {
-        return this._instance || (this._instance = new this(new PrismaClient()))
-    }
-
-    toTransactionResponse(request: TransactionDb): TransactionResponse {
+  toTransactionResponse(request: TransactionDb): TransactionResponse {
+    return {
+      id: request.id,
+      orderDate: request.order_date,
+      lastUpdate: request.last_update,
+      paymentStatus: request.payment_status,
+      buyerName: request.buyer_name,
+      tellerName: request.teller_name,
+      order: request.orderDetail.map((or) => {
         return {
-            idTransaction: request.id,
-            createdAt: request.created_ar,
-            lastUpdate: request.last_update,
-            statusPayment: request.status_payment,
-            order: request.order.map((order) => {
-                return {
-                    orderId: order.id,
-                    goodId: order.goods.id,
-                    goodName: order.goods.name,
-                    countOrder: order.count_good,
-                    priceItem: order.price_item,
-                    priceTotal: order.price_total,
-                    discount: order.price_total
-                }
+          id: or.id,
+          goodsName: or.goods_name,
+          goodsCount: or.goods_count,
+          goodsPrice: or.goods_price,
+          totalGoodsPrice: or.total_goods_price,
+          discount: or.discount,
+          barcode: or.barcode,
+        };
+      }),
+    };
+  }
 
-            })
-        }
+  async createTransaction(
+    request: TransactionRequest
+  ): Promise<TransactionResponse> {
+    const insert = await this.prismaClient.order.create({
+      data: {
+        id: uuid(),
+        order_date: request.orderDate,
+        last_update: request.lastUpdate,
+        payment_status: request.statusPayment,
+        buyer_id: request.buyerId,
+        buyer_name: request.buyerName,
+        teller_id: request.tellerId,
+        teller_name: request.tellerName,
+        orderDetail: {
+          create: request.order.map((detail: OrderRequest) => {
+            return {
+              id: uuid(),
+              goods_id: detail.goodId,
+              goods_name: detail.goodName,
+              goods_count: detail.goodCount,
+              goods_price: detail.goodPrice,
+              total_goods_price: detail.totalGoodPrice,
+              discount: detail.discount,
+              barcode: detail.barcode,
+            };
+          }),
+        },
+      },
+      select: {
+        id: true,
+        order_date: true,
+        last_update: true,
+        payment_status: true,
+        buyer_name: true,
+        teller_name: true,
+        orderDetail: {
+          select: {
+            id: true,
+            goods_name: true,
+            goods_count: true,
+            goods_price: true,
+            total_goods_price: true,
+            discount: true,
+            barcode: true,
+          },
+        },
+      },
+    });
 
-    }
-
-    async createTransaction(request: TransactionRequest): Promise<TransactionResponse> {
-        const insert = await this.prismaClient.transaction.create({
-            data: {
-                id: uuid(),
-                created_ar: Date(),
-                last_update: Date(),
-                status_payment: request.statusPayment,
-                order: {
-                    create: request.order.map((order: OrderRequest) => {
-                        return {
-                            id: uuid(),
-                            goods_id: order.idGood,
-                            count_good: order.count,
-                            price_item: order.priceItem,
-                            discount: order.discount,
-                            price_total: (order.count*order.priceItem)-((order.count*order.priceItem)*(order.discount/100))
-                        }
-                    })
-                }
-            },select: {
-                id: true,
-                created_ar: true,
-                last_update: true,
-                status_payment: true,
-                order: {
-                    select: {
-                        id: true,
-                        count_good: true,
-                        price_item: true,
-                        price_total: true,
-                        discount: true,
-                        goods: {
-                            select: {
-                                id: true,
-                                name: true
-                            }
-                        }
-                    }
-
-                }
-            }
-        })
-        return this.toTransactionResponse(insert)        
-    }
+    return this.toTransactionResponse(insert)
+  }
 }
 
-export const transactionServiceInstance = TransactionService.Instance
+export const transactionServiceInstance = TransactionService.Instance;
