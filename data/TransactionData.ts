@@ -1,6 +1,6 @@
 export type TransactionRequest = {
-  orderDate: number;
-  lastUpdate: number;
+  orderDate: bigint;
+  lastUpdate: bigint;
   statusPayment: string;
   buyerId: string;
   buyerName: string;
@@ -13,8 +13,8 @@ export type OrderRequest = {
   goodId: string;
   goodName: string;
   goodCount: number;
-  goodPrice: number;
-  totalGoodPrice: number;
+  goodPrice: bigint;
+  totalGoodPrice: bigint;
   discount: number;
   barcode: string;
 };
@@ -24,14 +24,14 @@ export type TransactionDb = {
     id: string;
     goods_name: string;
     goods_count: number;
-    goods_price: number;
-    total_goods_price: number;
+    goods_price: bigint;
+    total_goods_price: bigint;
     discount: number;
     barcode: string;
   }[];
   id: string;
-  order_date: number;
-  last_update: number;
+  order_date: bigint;
+  last_update: bigint;
   payment_status: string;
   buyer_name: string;
   teller_name: string;
@@ -39,8 +39,8 @@ export type TransactionDb = {
 
 export type TransactionResponse = {
   id: string;
-  orderDate: number;
-  lastUpdate: number;
+  orderDate: bigint;
+  lastUpdate: bigint;
   paymentStatus: string;
   buyerName: string;
   tellerName: string;
@@ -51,8 +51,8 @@ export type OrderResponse = {
   id: string;
   goodsName: string;
   goodsCount: number;
-  goodsPrice: number;
-  totalGoodsPrice: number;
+  goodsPrice: bigint;
+  totalGoodsPrice: bigint;
   discount: number;
   barcode: string;
 };

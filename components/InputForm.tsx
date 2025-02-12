@@ -7,8 +7,8 @@ import { GoodsRequestData } from "@/data/GoodsData";
 export const GoodsForm: React.FC = () => {
   const [formValues, setFormValues] = useState<GoodsRequestData>({
     name: "",
-    price: 0,
-    sellPrice: 0,
+    price: BigInt(0),
+    sellPrice: BigInt(0),
     discount: 0,
     stock: 0,
     barcode: "",
@@ -78,7 +78,7 @@ export const GoodsForm: React.FC = () => {
           type="number"
           id="price"
           name="price"
-          value={formValues.price}
+          value={formValues.price.toString()}
           onChange={handleChange}
           className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
         />
@@ -91,7 +91,7 @@ export const GoodsForm: React.FC = () => {
           type="number"
           id="sellPrice"
           name="sellPrice"
-          value={formValues.sellPrice}
+          value={formValues.sellPrice.toString()}
           onChange={handleChange}
           className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
         />

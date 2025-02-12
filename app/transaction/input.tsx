@@ -2,63 +2,135 @@
 
 import { GoodsResponse } from "@/data/GoodsData";
 import { OrderRequest } from "@/data/TransactionData";
-import { useState } from "react";
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { count } from "console";
+import { useEffect, useState } from "react";
+import { json } from "stream/consumers";
+import { endpoint } from "@/utils/endpoint";
+import { Order } from "@prisma/client";
+import { WebResponse } from "@/data/WebResponse";
 
-type InputProp = {
-  goods: GoodsResponse[]
-}
-
-export const InputTransaction: React.FC<InputProp> = (good) => {
+export const InputTransaction: React.FC = () => {
   const [goods, setGoods] = useState<OrderRequest[]>([]);
   const [formValues, setFormValues] = useState<GoodsResponse>();
-  const [count, setCount] = useState<number>(0);
+  const [goodName, setGoodName] = useState<string>("");
+  const [count, setCount] = useState<number>();
+  const [goodReq, setGoodsReq] = useState<GoodsResponse[]>()
 
-  const nameOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    const data = good.goods.find((nm) => nm.name.includes(value));
+  useEffect(() => {
+    const data = sessionStorage.getItem("goods");
+    console.log(`VALUUUUUUEEEEE ${data}`);
+    if (data) {
+      try {
+        const saveData: OrderRequest[] = JSON.parse(data ?? "");
+        console.log(`SAVEDATAAAAAAAAAAAA ${saveData} type ${typeof saveData}`);
+        // setGoods(data?JSON.parse(data):[]);
+      } catch (error) {
+        console.log(`printt error ${error}`);
+      }
+    }
+  }, []);
+
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((open) => open!);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, [goodName]);
+
+  const nameOnChange =  (value: string) => {
+    const data = goodReq?.find((nm) => nm.name == value);
+    console.log(`nikooo AAAAAA ${JSON.stringify(data)} value ${value}`);
     setFormValues(data);
+    setGoodName(value);
   };
 
+  useEffect(() => {
+    const goodFetcher = async () => {
+      const req = await fetch(`${endpoint}/goods?id=${goodName}`);
+      const result: WebResponse<GoodsResponse[]> = await req.json();
+      setGoodsReq(result.data)
+    }
+    goodFetcher()
+  },[goodName])
+
   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log(`nikoo Submit dataaaa ${formValues}`);
     if (formValues) {
-      const total = formValues.sellPrice * BigInt(count);
+      const countConv = BigInt(count ?? 0);
+      const total = BigInt(formValues.sellPrice) * countConv;
+      console.log(typeof formValues.sellPrice, formValues.sellPrice);
       const orderReq: OrderRequest = {
         goodId: formValues.id,
         goodName: formValues.name,
-        goodCount: count,
+        goodCount: count ?? 0,
         goodPrice: formValues.sellPrice,
         totalGoodPrice: total - total * BigInt(formValues.discount),
         barcode: formValues.barcode,
         discount: formValues.discount,
       };
       setGoods([...goods, orderReq]);
-      console.log(`valuee ${goods}`)
+      setFormValues(undefined);
+      const jsonString = JSON.stringify([...goods], (_, value) =>
+        typeof value === "bigint" ? value.toString() : value
+      );
+      setGoodName("");
+      sessionStorage.setItem("goods", jsonString);
+      setCount(undefined);
+      console.log(
+        `typeOf ${typeof goods} RRRRRR ${sessionStorage.getItem(
+          "goods"
+        )} ----- ${JSON.stringify(jsonString)} UUUUUU ${jsonString}`
+      );
     }
   };
 
   return (
-    <div>
+    <div className="flex flex-col">
       <div className="flex flex-row justify-between align-top bg-slate-700 border-spacing-2 p-10 rounded-xl">
         <form onSubmit={handleSubmit} className="flex flex-col">
           <label className="text-white font-medium">Nama/Kode barcode</label>
-          <input
-            type="text"
-            id="name"
-            onChange={nameOnChange}
-            value={formValues?.name}
-          />
+          <Command>
+            <CommandInput value={goodName} onValueChange={setGoodName} placeholder="Masukkan Nama Barang" />
+            <CommandList>
+              <CommandEmpty>Barang Tidak di temukan</CommandEmpty>
+              <CommandGroup heading="Saran Barang">
+                {goodReq?.map((barang) => (
+                  <CommandItem key={barang.index + "suggestion"} onSelect={()=>nameOnChange(barang.name)}>
+                    {barang.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
           <label className="text-white font-medium">Banyak</label>
           <input
             type="number"
+            className="rounded-md"
+            autoComplete="new-password"
             id="count"
-            value={count}
+            value={count ?? ""}
             onChange={(e) => {
               if (e.target.value) {
                 setCount(parseInt(e.target.value));
               }
             }}
           />
-          <button type="submit" className="rounded-md bg-blue-300">
+          <button type="submit" className="rounded-md bg-blue-300 mt-2">
             Pesan
           </button>
         </form>
@@ -69,6 +141,14 @@ export const InputTransaction: React.FC<InputProp> = (good) => {
           </div>
         </div>
       </div>
+      {goods?.map((it, index) => (
+        <div className="grid grid-cols-4" key={index}>
+          <div key={index + "name"}>{it.goodName}</div>
+          <div key={index + "price"}>{it.goodPrice}</div>
+          <div key={index + "count"}>{it.goodCount}</div>
+          <div key={index + "total"}>{it.totalGoodPrice}</div>
+        </div>
+      ))}
     </div>
   );
 };

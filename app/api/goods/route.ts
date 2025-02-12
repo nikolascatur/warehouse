@@ -19,9 +19,7 @@ export async function GET(req:NextRequest): Promise<NextResponse> {
     try {
         const goodService = goodServiceInstance
         const param = req.nextUrl.searchParams.get("id")
-        console.log(`nikoo CHEEEEKKK param ${param}`)
         const listGood = await goodService.getGoodsId(param??"")
-        console.log(`nikoo BBBBBBBBB ${listGood}`)
         const serializedData = JSON.parse(JSON.stringify(listGood, (_, value) =>
             typeof value === "bigint" ? value.toString() : value
           ));
@@ -31,7 +29,6 @@ export async function GET(req:NextRequest): Promise<NextResponse> {
         }, {status: 200})
 
     } catch(error) {
-        console.log(`nikoo ERRROR ${(error as Error).message}`)
         return NextResponse.json(
             { success: false, message: 'Internal server error.', error: (error as Error).message },
             { status: 500 }
