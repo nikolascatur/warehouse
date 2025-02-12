@@ -1,7 +1,7 @@
 export type TransactionRequest = {
   orderDate: bigint;
   lastUpdate: bigint;
-  statusPayment: string;
+  statusPayment: "hutang"|"lunas";
   buyerId: string;
   buyerName: string;
   tellerId: string;

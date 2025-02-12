@@ -17,13 +17,15 @@ import { json } from "stream/consumers";
 import { endpoint } from "@/utils/endpoint";
 import { Order } from "@prisma/client";
 import { WebResponse } from "@/data/WebResponse";
+import { TransactionRequest } from "@/data/TransactionData";
+import { toStringfy } from "@/lib/utils";
 
 export const InputTransaction: React.FC = () => {
   const [goods, setGoods] = useState<OrderRequest[]>([]);
   const [formValues, setFormValues] = useState<GoodsResponse>();
   const [goodName, setGoodName] = useState<string>("");
   const [count, setCount] = useState<number>();
-  const [goodReq, setGoodsReq] = useState<GoodsResponse[]>()
+  const [goodReq, setGoodsReq] = useState<GoodsResponse[]>();
 
   useEffect(() => {
     const data = sessionStorage.getItem("goods");
@@ -51,7 +53,7 @@ export const InputTransaction: React.FC = () => {
     return () => document.removeEventListener("keydown", down);
   }, [goodName]);
 
-  const nameOnChange =  (value: string) => {
+  const nameOnChange = (value: string) => {
     const data = goodReq?.find((nm) => nm.name == value);
     console.log(`nikooo AAAAAA ${JSON.stringify(data)} value ${value}`);
     setFormValues(data);
@@ -59,13 +61,19 @@ export const InputTransaction: React.FC = () => {
   };
 
   useEffect(() => {
-    const goodFetcher = async () => {
-      const req = await fetch(`${endpoint}/goods?id=${goodName}`);
-      const result: WebResponse<GoodsResponse[]> = await req.json();
-      setGoodsReq(result.data)
+    if (goodName.length > 0 && goodName.length % 2 == 0) {
+      const goodFetcher = async () => {
+        const req = await fetch(`${endpoint}/goods?id=${goodName}`);
+        const result: WebResponse<GoodsResponse[]> = await req.json();
+        setGoodsReq(result.data);
+      };
+      goodFetcher();
+    } else {
+      if(goodName.length == 0) {
+        setGoodsReq([]);
+      }
     }
-    goodFetcher()
-  },[goodName])
+  }, [goodName]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,9 +93,7 @@ export const InputTransaction: React.FC = () => {
       };
       setGoods([...goods, orderReq]);
       setFormValues(undefined);
-      const jsonString = JSON.stringify([...goods], (_, value) =>
-        typeof value === "bigint" ? value.toString() : value
-      );
+      const jsonString = toStringfy([...goods])
       setGoodName("");
       sessionStorage.setItem("goods", jsonString);
       setCount(undefined);
@@ -99,23 +105,52 @@ export const InputTransaction: React.FC = () => {
     }
   };
 
+  const onSubmitTransaction = async () => {
+      const transaction: TransactionRequest = {
+          orderDate: BigInt(Date.now()),
+          lastUpdate: BigInt(Date.now()),
+          statusPayment: "lunas",
+          buyerId: "",
+          buyerName: "",
+          tellerId: "",
+          tellerName: "",
+          order: goods,        
+      } 
+      const req = await fetch(`${endpoint}/transaction`, {
+        method: "POST", 
+        headers: {
+          "content-type": "application/json"
+        },
+        body: toStringfy(transaction)
+      })
+  }
+
   return (
     <div className="flex flex-col">
       <div className="flex flex-row justify-between align-top bg-slate-700 border-spacing-2 p-10 rounded-xl">
         <form onSubmit={handleSubmit} className="flex flex-col">
           <label className="text-white font-medium">Nama/Kode barcode</label>
           <Command>
-            <CommandInput value={goodName} onValueChange={setGoodName} placeholder="Masukkan Nama Barang" />
+            <CommandInput
+              value={goodName}
+              onValueChange={setGoodName}
+              placeholder="Masukkan Nama Barang"
+            />
+            {/* {goodName.length > 0 && ( */}
             <CommandList>
               <CommandEmpty>Barang Tidak di temukan</CommandEmpty>
               <CommandGroup heading="Saran Barang">
                 {goodReq?.map((barang) => (
-                  <CommandItem key={barang.index + "suggestion"} onSelect={()=>nameOnChange(barang.name)}>
+                  <CommandItem
+                    key={barang.index + "suggestion"}
+                    onSelect={() => nameOnChange(barang.name)}
+                  >
                     {barang.name}
                   </CommandItem>
                 ))}
               </CommandGroup>
             </CommandList>
+            {/* )} */}
           </Command>
           <label className="text-white font-medium">Banyak</label>
           <input
@@ -149,6 +184,7 @@ export const InputTransaction: React.FC = () => {
           <div key={index + "total"}>{it.totalGoodPrice}</div>
         </div>
       ))}
+      <button onClick={onSubmitTransaction}>Submit</button>
     </div>
   );
 };
