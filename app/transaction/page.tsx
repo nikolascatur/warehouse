@@ -29,7 +29,7 @@ export default async function Page() {
   return (
     <Container
       as="main"
-      className="w-full flex flex-col m-5 bg-slate-500 border-spacing-y-16 rounded-xl"
+      className="w-5/6 flex flex-col m-5 bg-slate-500 border-spacing-y-16 rounded-xl"
     >
       <div className="flex flex-col">
         <InputTransaction />

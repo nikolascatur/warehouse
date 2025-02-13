@@ -18,14 +18,17 @@ import { endpoint } from "@/utils/endpoint";
 import { Order } from "@prisma/client";
 import { WebResponse } from "@/data/WebResponse";
 import { TransactionRequest } from "@/data/TransactionData";
-import { toStringfy } from "@/lib/utils";
+import { formatCurrency, toStringfy, isValideForm } from "@/lib/utils";
+import { stringToNumber } from "@/lib/utils";
 
 export const InputTransaction: React.FC = () => {
   const [goods, setGoods] = useState<OrderRequest[]>([]);
   const [formValues, setFormValues] = useState<GoodsResponse>();
   const [goodName, setGoodName] = useState<string>("");
-  const [count, setCount] = useState<number>();
+  const [count, setCount] = useState<string>();
   const [goodReq, setGoodsReq] = useState<GoodsResponse[]>();
+  const [disPesan, setDisPesan] = useState<boolean>(true)
+  const [total, setTotal] = useState<string>()
 
   useEffect(() => {
     const data = sessionStorage.getItem("goods");
@@ -58,6 +61,7 @@ export const InputTransaction: React.FC = () => {
     console.log(`nikooo AAAAAA ${JSON.stringify(data)} value ${value}`);
     setFormValues(data);
     setGoodName(value);
+    setDisPesan(!isValideForm(formValues?.name, count?.toString()))
   };
 
   useEffect(() => {
@@ -75,9 +79,19 @@ export const InputTransaction: React.FC = () => {
     }
   }, [goodName]);
 
+  const calculateTotal = () => {
+    let total = BigInt(0)
+    goods.map(good => {
+      const count = BigInt(good.goodCount)
+      const discount = good.goodPrice * (BigInt(good.discount) / BigInt(100))
+      total += (good.goodPrice - discount) * count
+    })
+    const currency = formatCurrency(Number(total))
+    setTotal(currency)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(`nikoo Submit dataaaa ${formValues}`);
     if (formValues) {
       const countConv = BigInt(count ?? 0);
       const total = BigInt(formValues.sellPrice) * countConv;
@@ -85,7 +99,7 @@ export const InputTransaction: React.FC = () => {
       const orderReq: OrderRequest = {
         goodId: formValues.id,
         goodName: formValues.name,
-        goodCount: count ?? 0,
+        goodCount: stringToNumber(count),
         goodPrice: formValues.sellPrice,
         totalGoodPrice: total - total * BigInt(formValues.discount),
         barcode: formValues.barcode,
@@ -97,11 +111,7 @@ export const InputTransaction: React.FC = () => {
       setGoodName("");
       sessionStorage.setItem("goods", jsonString);
       setCount(undefined);
-      console.log(
-        `typeOf ${typeof goods} RRRRRR ${sessionStorage.getItem(
-          "goods"
-        )} ----- ${JSON.stringify(jsonString)} UUUUUU ${jsonString}`
-      );
+      calculateTotal()
     }
   };
 
@@ -136,7 +146,6 @@ export const InputTransaction: React.FC = () => {
               onValueChange={setGoodName}
               placeholder="Masukkan Nama Barang"
             />
-            {/* {goodName.length > 0 && ( */}
             <CommandList>
               <CommandEmpty>Barang Tidak di temukan</CommandEmpty>
               <CommandGroup heading="Saran Barang">
@@ -150,7 +159,6 @@ export const InputTransaction: React.FC = () => {
                 ))}
               </CommandGroup>
             </CommandList>
-            {/* )} */}
           </Command>
           <label className="text-white font-medium">Banyak</label>
           <input
@@ -160,19 +168,21 @@ export const InputTransaction: React.FC = () => {
             id="count"
             value={count ?? ""}
             onChange={(e) => {
-              if (e.target.value) {
-                setCount(parseInt(e.target.value));
-              }
+              // if (e.target.value) {
+                const number = parseInt(e.target.value)
+                setCount(e.target.value??"");
+                setDisPesan(!isValideForm(formValues?.name, number.toString()))
+              // }
             }}
           />
-          <button type="submit" className="rounded-md bg-blue-300 mt-2">
+          <button type="submit" className="rounded-md bg-blue-300 mt-2 disabled:opacity-50" disabled={disPesan}>
             Pesan
           </button>
         </form>
         <div className="mx-10">
           <div className="text-white text-xl font-medium">Total :</div>
           <div className="text-white text-4xl font-bold my-2">
-            Rp 1000000,00
+            {total}
           </div>
         </div>
       </div>
