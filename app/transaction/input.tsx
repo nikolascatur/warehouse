@@ -124,7 +124,6 @@ export const InputTransaction: React.FC = () => {
       sessionStorage.setItem("goods", jsonString);
       setCount(undefined);
       setIsHintHidden(true);
-      saveCustomer();
     }
   };
 
