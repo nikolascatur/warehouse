@@ -18,8 +18,7 @@ export async function GET(req:NextRequest): Promise<NextResponse> {
 
     try {
         const goodService = goodServiceInstance
-        const param = req.nextUrl.searchParams.get("id")
-        const listGood = await goodService.getGoodsId(param??"")
+        const listGood = await goodService.getGoods()
         const serializedData = JSON.parse(JSON.stringify(listGood, (_, value) =>
             typeof value === "bigint" ? value.toString() : value
           ));
@@ -37,7 +36,7 @@ export async function GET(req:NextRequest): Promise<NextResponse> {
 }
 
 export async function DELETE(req: NextRequest): Promise<NextResponse> {
-    try {
+    try {   
             const goodId = req.nextUrl.searchParams.get("id") as string
             const deleteGoods = goodServiceInstance.deleteGoods(goodId)
             return NextResponse.json({

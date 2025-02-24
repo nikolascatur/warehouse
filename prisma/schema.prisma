@@ -18,6 +18,7 @@ model Goods {
   name String @db.VarChar(100)
   price BigInt
   sell_price BigInt
+  weight Int @default(0)
   discount Float
   stock Int
   barcode String @db.VarChar(100)
@@ -62,6 +63,7 @@ model OrderDetail {
   goods_price BigInt
   total_goods_price BigInt
   discount Int
+  weight Int @default(0)
   barcode String @db.VarChar(100)
   order_id String @db.VarChar(100)
   order Order @relation(fields: [order_id], references: [id])

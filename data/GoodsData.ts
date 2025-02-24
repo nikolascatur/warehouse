@@ -15,5 +15,6 @@ export type GoodsResponse = {
     sellPrice: bigint,
     discount: number,
     stock: number,
-    barcode: string
+    barcode: string,
+    weight: number
 }

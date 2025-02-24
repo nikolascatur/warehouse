@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE `Goods` ADD COLUMN `weight` INTEGER NOT NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE `OrderDetail` ADD COLUMN `weight` INTEGER NOT NULL DEFAULT 0;

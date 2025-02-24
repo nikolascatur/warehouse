@@ -15,11 +15,14 @@ import { count } from "console";
 import { useEffect, useState } from "react";
 import { json } from "stream/consumers";
 import { endpoint } from "@/utils/endpoint";
-import { Order } from "@prisma/client";
+import { Buyer, Order } from "@prisma/client";
 import { WebResponse } from "@/data/WebResponse";
 import { TransactionRequest } from "@/data/TransactionData";
 import { formatCurrency, toStringfy, isValideForm } from "@/lib/utils";
 import { stringToNumber } from "@/lib/utils";
+import clsx from "clsx";
+import { InputSuggestionBuyer } from "@/components/InputSuggestion";
+import { BuyerRequest, BuyerResponse } from "@/data/BuyerData";
 
 export const InputTransaction: React.FC = () => {
   const [goods, setGoods] = useState<OrderRequest[]>([]);
@@ -27,8 +30,9 @@ export const InputTransaction: React.FC = () => {
   const [goodName, setGoodName] = useState<string>("");
   const [count, setCount] = useState<string>();
   const [goodReq, setGoodsReq] = useState<GoodsResponse[]>();
-  const [disPesan, setDisPesan] = useState<boolean>(true)
-  const [total, setTotal] = useState<string>()
+  const [disPesan, setDisPesan] = useState<boolean>(true);
+  const [total, setTotal] = useState<string>();
+  const [isHintHidden, setIsHintHidden] = useState<boolean>(true);
 
   useEffect(() => {
     const data = sessionStorage.getItem("goods");
@@ -44,24 +48,21 @@ export const InputTransaction: React.FC = () => {
     }
   }, []);
 
-  const [open, setOpen] = useState(false);
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => open!);
       }
     };
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, [goodName]);
 
-  const nameOnChange = (value: string) => {
-    const data = goodReq?.find((nm) => nm.name == value);
-    console.log(`nikooo AAAAAA ${JSON.stringify(data)} value ${value}`);
-    setFormValues(data);
-    setGoodName(value);
-    setDisPesan(!isValideForm(formValues?.name, count?.toString()))
+  const nameOnChange = (value: GoodsResponse, name: string) => {
+    setFormValues(value);
+    setGoodName(`${value.name} (${value.weight}) gram`);
+    setDisPesan(!isValideForm(formValues?.name, count?.toString()));
+    setIsHintHidden(name.length == 0);
   };
 
   useEffect(() => {
@@ -70,25 +71,36 @@ export const InputTransaction: React.FC = () => {
         const req = await fetch(`${endpoint}/goods?id=${goodName}`);
         const result: WebResponse<GoodsResponse[]> = await req.json();
         setGoodsReq(result.data);
+        setIsHintHidden(result.data.length == 0);
       };
       goodFetcher();
     } else {
-      if(goodName.length == 0) {
+      if (goodName.length == 0) {
         setGoodsReq([]);
+        setIsHintHidden(true);
       }
     }
   }, [goodName]);
 
+  useEffect(() => {
+    calculateTotal();
+  }, [goods]);
+
   const calculateTotal = () => {
-    let total = BigInt(0)
-    goods.map(good => {
-      const count = BigInt(good.goodCount)
-      const discount = good.goodPrice * (BigInt(good.discount) / BigInt(100))
-      total += (good.goodPrice - discount) * count
-    })
-    const currency = formatCurrency(Number(total))
-    setTotal(currency)
-  }
+    let total = BigInt(0);
+    goods.forEach((good) => {
+      const count = BigInt(good.goodCount);
+      const discoountNum = Number(good.discount);
+      const disc = BigInt((discoountNum / 100) * 1000);
+      // const discount = good.goodPrice * BigInt
+      // console.log(`countt--- ${((good.goodPrice - discount) * count)}`)
+      const price = BigInt(good.goodPrice);
+      total = total + price * count;
+    });
+    console.log(`count-- TOTAL = ${total}`);
+    const currency = formatCurrency(Number(total));
+    setTotal(currency);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,54 +119,64 @@ export const InputTransaction: React.FC = () => {
       };
       setGoods([...goods, orderReq]);
       setFormValues(undefined);
-      const jsonString = toStringfy([...goods])
+      const jsonString = toStringfy([...goods]);
       setGoodName("");
       sessionStorage.setItem("goods", jsonString);
       setCount(undefined);
-      calculateTotal()
+      setIsHintHidden(true);
+      saveCustomer();
     }
   };
 
   const onSubmitTransaction = async () => {
-      const transaction: TransactionRequest = {
-          orderDate: BigInt(Date.now()),
-          lastUpdate: BigInt(Date.now()),
-          statusPayment: "lunas",
-          buyerId: "",
-          buyerName: "",
-          tellerId: "",
-          tellerName: "",
-          order: goods,        
-      } 
-      const req = await fetch(`${endpoint}/transaction`, {
-        method: "POST", 
-        headers: {
-          "content-type": "application/json"
-        },
-        body: toStringfy(transaction)
-      })
-  }
+    const transaction: TransactionRequest = {
+      orderDate: BigInt(Date.now()),
+      lastUpdate: BigInt(Date.now()),
+      statusPayment: "lunas",
+      buyerId: "",
+      buyerName: "",
+      tellerId: "",
+      tellerName: "",
+      order: goods,
+    };
+    const req = await fetch(`${endpoint}/transaction`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: toStringfy(transaction),
+    });
+  };
 
   return (
     <div className="flex flex-col">
-      <div className="flex flex-row justify-between align-top bg-slate-700 border-spacing-2 p-10 rounded-xl">
+      <div className="grid grid-cols-2 justify-between align-top bg-slate-700 border-spacing-2 p-10 rounded-xl">
         <form onSubmit={handleSubmit} className="flex flex-col">
           <label className="text-white font-medium">Nama/Kode barcode</label>
-          <Command>
+          <Command className="min-w-max">
             <CommandInput
+              className="min-w-max"
               value={goodName}
               onValueChange={setGoodName}
               placeholder="Masukkan Nama Barang"
             />
-            <CommandList>
-              <CommandEmpty>Barang Tidak di temukan</CommandEmpty>
-              <CommandGroup heading="Saran Barang">
+            <CommandList className="absolute my-10 bg-slate-800 rounded-lg z-10">
+              <CommandEmpty hidden={true}></CommandEmpty>
+              <CommandGroup hidden={isHintHidden}>
                 {goodReq?.map((barang) => (
                   <CommandItem
+                    className="text-white"
                     key={barang.index + "suggestion"}
-                    onSelect={() => nameOnChange(barang.name)}
+                    onKeyDown={() => {
+                      nameOnChange(barang, barang.name);
+                      setGoodsReq([]);
+                    }}
+                    onSelect={() => {
+                      nameOnChange(barang, barang.name);
+                      setGoodsReq([]);
+                    }}
                   >
-                    {barang.name}
+                    {`${barang.name} (${barang.weight}) gram`}
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -168,33 +190,51 @@ export const InputTransaction: React.FC = () => {
             id="count"
             value={count ?? ""}
             onChange={(e) => {
-              // if (e.target.value) {
-                const number = parseInt(e.target.value)
-                setCount(e.target.value??"");
-                setDisPesan(!isValideForm(formValues?.name, number.toString()))
-              // }
+              const number = parseInt(e.target.value);
+              setCount(e.target.value ?? "");
+              setDisPesan(!isValideForm(formValues?.name, number.toString()));
             }}
           />
-          <button type="submit" className="rounded-md bg-blue-300 mt-2 disabled:opacity-50" disabled={disPesan}>
+          <button
+            type="submit"
+            className="rounded-md bg-blue-300 mt-2 disabled:opacity-50"
+            disabled={disPesan}
+          >
             Pesan
           </button>
         </form>
         <div className="mx-10">
           <div className="text-white text-xl font-medium">Total :</div>
-          <div className="text-white text-4xl font-bold my-2">
-            {total}
-          </div>
+          <div className="text-white text-4xl font-bold my-2">{total}</div>
         </div>
       </div>
+      <div className="grid grid-cols-4 border-solid border-2 place-items-center rounded-tl-lg rounded-tr-lg">
+        <div>Nama</div>
+        <div>Harga</div>
+        <div>Banyak</div>
+        <div>Sub Total</div>
+      </div>
       {goods?.map((it, index) => (
-        <div className="grid grid-cols-4" key={index}>
+        <div
+          className="grid grid-cols-4 place-items-center border-l-2 border-r-2"
+          key={index}
+        >
           <div key={index + "name"}>{it.goodName}</div>
           <div key={index + "price"}>{it.goodPrice}</div>
           <div key={index + "count"}>{it.goodCount}</div>
           <div key={index + "total"}>{it.totalGoodPrice}</div>
         </div>
       ))}
-      <button onClick={onSubmitTransaction}>Submit</button>
+      <div className="border-b-2 rounded-bl-lg rounded-br-lg"></div>
+      <button
+        className={clsx(
+          "rounded-md bg-blue-300 mt-2 disabled:opacity-50 disabled:text-gray-50"
+        )}
+        disabled={goods.length == 0}
+        onClick={onSubmitTransaction}
+      >
+        Submit
+      </button>
     </div>
   );
 };

@@ -21,17 +21,18 @@ class GoodService {
       discount: response.discount,
       stock: response.stock,
       barcode: response.barcode,
+      weight: response.weight
     };
   }
 
-  private async getGoods(): Promise<GoodsResponse[]> {
+  async getGoods(): Promise<GoodsResponse[]> {
     const datas = await this.prismaClient.goods.findMany();
     return datas.map((data: Goods, index: number) =>
       this.toGoods(index + 1, data)
     );
   }
 
-  async getGoodsId(text: string): Promise<GoodsResponse[]> {
+  async getGoodsId(text : string): Promise<GoodsResponse[]> {
     console.log(`nikoo PARQAMAMMM ${text === ""}`);
     if (text === "") {
       const datas = await this.prismaClient.goods.findMany();
