@@ -11,8 +11,8 @@ import { BuyerResponse } from "@/data/BuyerData";
 import { Buyer } from "@prisma/client";
 
 interface PropInputSuggestion {
-  suggestionItem: BuyerResponse[];
-  nameOnChange: (buyer: BuyerResponse, name: string) => void;
+  suggestionItem: BuyerResponse[] | null;
+  nameOnChange: (buyer: BuyerResponse | null, name: string) => void;
   setName: (buyers: BuyerResponse[]) => void;
   isHidenSuggestion: boolean;
 }
@@ -25,10 +25,24 @@ export const InputSuggestionBuyer: React.FC<PropInputSuggestion> = ({
 }) => {
   const [isHintHidden, setIsHintHidden] = useState<boolean>(true);
   const [goodName, setGoodName] = useState<string>("");
+  const [selectedBuyer, setSelectedBuyer] = useState<BuyerResponse | null>(
+    null
+  );
 
   useEffect(() => {
     setIsHintHidden(isHidenSuggestion);
   }, [isHidenSuggestion]);
+
+  const updateInput = (buyer: BuyerResponse) => {
+    console.log(`AAAAAAAAAAAAAAAAAAAAAAA `);
+    setSelectedBuyer(buyer);
+    nameOnChange(buyer, goodName);
+    setName([]);
+  };
+
+  useEffect(() => {
+    nameOnChange(selectedBuyer, goodName);
+  }, [goodName]);
 
   return (
     <Command>
@@ -45,12 +59,10 @@ export const InputSuggestionBuyer: React.FC<PropInputSuggestion> = ({
               className="text-white"
               key={buyer.id + "suggestion"}
               onKeyDown={() => {
-                nameOnChange(buyer, buyer.buyer_name);
-                setName([]);
+                updateInput(buyer);
               }}
               onSelect={() => {
-                nameOnChange(buyer, buyer.buyer_name);
-                setName([]);
+                updateInput(buyer);
               }}
             >
               {buyer.buyer_name}

@@ -23,6 +23,7 @@ import { stringToNumber } from "@/lib/utils";
 import clsx from "clsx";
 import { InputSuggestionBuyer } from "@/components/InputSuggestion";
 import { BuyerRequest, BuyerResponse } from "@/data/BuyerData";
+import { DialogBuyer } from "./DialogBuyer";
 
 export const InputTransaction: React.FC = () => {
   const [goods, setGoods] = useState<OrderRequest[]>([]);
@@ -33,6 +34,8 @@ export const InputTransaction: React.FC = () => {
   const [disPesan, setDisPesan] = useState<boolean>(true);
   const [total, setTotal] = useState<string>();
   const [isHintHidden, setIsHintHidden] = useState<boolean>(true);
+  const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
+  const [custSelected, setCustSelected] = useState<BuyerResponse>();
 
   useEffect(() => {
     const data = sessionStorage.getItem("goods");
@@ -207,6 +210,10 @@ export const InputTransaction: React.FC = () => {
           <div className="text-white text-4xl font-bold my-2">{total}</div>
         </div>
       </div>
+      <div>
+        <button onClick={() => setIsOpenDialog(true)}>Nama Pembeli :</button>
+        <div>{custSelected?.buyer_name}</div>
+      </div>
       <div className="grid grid-cols-4 border-solid border-2 place-items-center rounded-tl-lg rounded-tr-lg">
         <div>Nama</div>
         <div>Harga</div>
@@ -234,6 +241,12 @@ export const InputTransaction: React.FC = () => {
       >
         Submit
       </button>
+      <DialogBuyer
+        isOpen={isOpenDialog}
+        onOpenChange={setIsOpenDialog}
+        onClose={() => setIsOpenDialog(false)}
+        onSubmit={(data) => setCustSelected(data)}
+      />
     </div>
   );
 };
