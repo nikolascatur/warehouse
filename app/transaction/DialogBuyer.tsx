@@ -32,7 +32,7 @@ export const DialogBuyer: React.FC<DialogBuyerProp> = ({
     if (custName.length > 0) {
       const custRequest: BuyerRequest = {
         buyer_name: custName,
-        phone: "",
+        phone: phone,
       };
       const req = await fetch(`${endpoint}/buyer`, {
         method: "POST",
@@ -43,6 +43,8 @@ export const DialogBuyer: React.FC<DialogBuyerProp> = ({
       });
       const byer: BuyerResponse = await req.json();
       setCustSelected(byer);
+      onSubmit(byer);
+      onClose();
     }
   };
 
@@ -66,9 +68,10 @@ export const DialogBuyer: React.FC<DialogBuyerProp> = ({
   const custChangeName = (value: BuyerResponse | null, name: string) => {
     if (value) {
       setCustSelected(value);
+      setPhone(value.phone);
     }
     setCustName(name);
-    console.log(`AAAAAAAA  ${name} ${custName}`);
+    console.log(`AAAAAAAA  ${name} ${custName} value ${value}`);
     setIsHintHidden(name.length == 0);
   };
 

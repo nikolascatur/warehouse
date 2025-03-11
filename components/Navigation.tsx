@@ -6,10 +6,16 @@ export const Navigation = () => {
       <Container className="flex flex-col justify-between py-5">
         <ul>
           <li>
+            <a href="/dashboard">Dashboard</a>
+          </li>
+          <li>
             <a href="/goods">Tambah barang</a>
           </li>
           <li>
             <a href="/transaction">Transaksi</a>
+          </li>
+          <li>
+            <a href="/report">Laporan</a>
           </li>
           <li>
             <a href="/about">About</a>

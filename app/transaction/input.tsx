@@ -135,8 +135,8 @@ export const InputTransaction: React.FC = () => {
       orderDate: BigInt(Date.now()),
       lastUpdate: BigInt(Date.now()),
       statusPayment: "lunas",
-      buyerId: "",
-      buyerName: "",
+      buyerId: custSelected?.id ?? "",
+      buyerName: custSelected?.buyer_name ?? "",
       tellerId: "",
       tellerName: "",
       order: goods,
@@ -148,6 +148,7 @@ export const InputTransaction: React.FC = () => {
       },
       body: toStringfy(transaction),
     });
+    setGoods([]);
   };
 
   return (
@@ -210,9 +211,11 @@ export const InputTransaction: React.FC = () => {
           <div className="text-white text-4xl font-bold my-2">{total}</div>
         </div>
       </div>
-      <div>
-        <button onClick={() => setIsOpenDialog(true)}>Nama Pembeli :</button>
-        <div>{custSelected?.buyer_name}</div>
+      <div className="flex flex-row">
+        <button onClick={() => setIsOpenDialog(true)}>Nama Pembeli : </button>
+        <div className="px-2">
+          {`${custSelected?.buyer_name ?? ""} ${custSelected?.phone ?? ""}`}
+        </div>
       </div>
       <div className="grid grid-cols-4 border-solid border-2 place-items-center rounded-tl-lg rounded-tr-lg">
         <div>Nama</div>

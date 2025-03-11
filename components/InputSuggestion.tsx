@@ -34,10 +34,14 @@ export const InputSuggestionBuyer: React.FC<PropInputSuggestion> = ({
   }, [isHidenSuggestion]);
 
   const updateInput = (buyer: BuyerResponse) => {
-    console.log(`AAAAAAAAAAAAAAAAAAAAAAA `);
+    console.log(
+      `AAAAAAAAAAAAAAAAAAAAAAA ${buyer.buyer_name} phone ${buyer.phone}`
+    );
     setSelectedBuyer(buyer);
     nameOnChange(buyer, goodName);
+    setGoodName(buyer.buyer_name);
     setName([]);
+    setIsHintHidden(true);
   };
 
   useEffect(() => {
@@ -65,7 +69,7 @@ export const InputSuggestionBuyer: React.FC<PropInputSuggestion> = ({
                 updateInput(buyer);
               }}
             >
-              {buyer.buyer_name}
+              {`${buyer.buyer_name}`}
             </CommandItem>
           ))}
         </CommandGroup>
