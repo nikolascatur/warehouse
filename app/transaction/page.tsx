@@ -27,10 +27,7 @@ async function getGoods(): Promise<GoodsResponse[]> {
 export default async function Page() {
   const call: GoodsResponse[] = await getGoods();
   return (
-    <Container
-      as="main"
-      className="w-5/6 flex flex-col m-5 bg-slate-500 border-spacing-y-16 rounded-xl"
-    >
+    <Container>
       <div className="flex flex-col">
         <InputTransaction />
       </div>
