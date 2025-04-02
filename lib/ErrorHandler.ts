@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 
-export const ErrorHandlerApi = (error) => {
+export const ErrorHandlerApi = async (error: Error) => {
 
     return NextResponse.json({
         success: false,
